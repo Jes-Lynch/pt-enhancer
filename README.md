@@ -34,4 +34,4 @@ optional arguments:
 `python main.py --upscale_factor 3 --batchSize 10 --testBatchSize 100 --nEpochs 100 --lr 0.001 --cuda`
 
 ### Super Resolve
-`python super_resolve.py --input_dir dataset/<type>/images/lowres --ref_dir dataset/<type>/images/highres/ --model model_epoch_100.pth --output_filename out --output_dir results --cuda`
+`python super_resolve.py --input_dir dataset/<type>/images/lowres --ref_dir dataset/<type>/images/highres/ --model model_epoch_100.pth --output_dir results --cuda`
