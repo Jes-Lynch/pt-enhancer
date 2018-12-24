@@ -28,6 +28,8 @@ sr_set = opt.input_dir
 
 images = glob.glob(sr_set+"/*.png")
 
+model_dir = join("checkpoints", opt.model)
+
 for image in images:
     filename = os.fsdecode(image)
     print(opt)
@@ -35,7 +37,7 @@ for image in images:
         img = Image.open(filename).convert('YCbCr')
     y, cb, cr = img.split()
 
-    model = torch.load(opt.model)
+    model = torch.load(model_dir)
     img_to_tensor = ToTensor()
     input = img_to_tensor(y).view(1, -1, y.size[1], y.size[0])
 
