@@ -25,6 +25,10 @@ optional arguments:
 
 ## Example Usage:
 
+### Data Structure
+`%root%\dataset\%subset%\images\(highres or lowres)`
+`Example: pt_enhancer\dataset\kidney\images\highres\`
+
 ### Train
 
 `python main.py --upscale_factor 3 --batchSize 10 --testBatchSize 100 --nEpochs 100 --lr 0.001 --cuda --train`
