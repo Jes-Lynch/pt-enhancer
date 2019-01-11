@@ -8,11 +8,11 @@ class Net(nn.Module):
         super(Net, self).__init__()
 
         self.relu = nn.ReLU()
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=5, stride = 1, padding=2)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride = 1, padding=1)
         self.conv2 = nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3, stride = 1, padding=1)
         self.conv3 = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride = 1, padding=1)
         self.conv4 = nn.Conv2d(in_channels=16, out_channels=8, kernel_size=3, stride = 1, padding=1)
-        self.conv5 = nn.Conv2d(in_channels=8, out_channels=upscale_factor**2, kernel_size=3, stride = 1, padding=1)
+        self.conv5 = nn.Conv2d(in_channels=8, out_channels=upscale_factor**2, kernel_size=1, stride = 1, padding=0)
         self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
 
         self._initialize_weights()

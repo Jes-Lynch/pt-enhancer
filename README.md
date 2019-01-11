@@ -31,11 +31,11 @@ optional arguments:
 
 ### Train
 
-`python main.py --upscale_factor 3 --batchSize 10 --testBatchSize 100 --nEpochs 100 --lr 0.001 --cuda --train`
+`--upscale_factor 4 --batchSize 10 --nEpochs 1000 --lr 0.0001 --threads 5 --cuda --train`
 
 ### Test
 
-`python main.py --upscale_factor 3 --batchSize 10 --testBatchSize 100 --nEpochs 100 --lr 0.001 --cuda`
+`--upscale_factor 4 --testBatchSize 1 --nEpochs 1000 --threads 5 --cuda`
 
 ### Super Resolve
 `python super_resolve.py --input_dir dataset/<type>/images/lowres --ref_dir dataset/<type>/images/highres/ --model model_epoch_100.pth --output_dir results --cuda`

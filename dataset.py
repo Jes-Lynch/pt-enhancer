@@ -10,8 +10,9 @@ def is_image_file(filename):
 
 
 def load_img(filepath):
-    img = Image.open(filepath).convert('YCbCr')
-    y, _, _ = img.split()
+    img = Image.open(filepath).convert('L')
+    #y, _, _ = img.split()
+    y = img
     return y
 
 
@@ -24,8 +25,8 @@ class DatasetFromFolder(data.Dataset):
         self.target_transform = target_transform
 
     def __getitem__(self, index):
-        input = load_img(self.highres_filenames[index])
-        target = load_img(self.lowres_filenames[index])
+        input = load_img(self.lowres_filenames[index])
+        target = load_img(self.highres_filenames[index])
         if self.input_transform:
             input = self.input_transform(input)
         if self.target_transform:
