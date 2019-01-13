@@ -13,16 +13,16 @@ def calculate_valid_crop_size(crop_size, upscale_factor):
 
 def input_transform(crop_size, upscale_factor):
     return Compose([
-        Resize((int(crop_size/upscale_factor), int(crop_size/upscale_factor)), interpolation=3),
-        #CenterCrop(crop_size // upscale_factor),
+        Resize((int(1280/upscale_factor), int(1280/upscale_factor)), interpolation=3),
+        CenterCrop(crop_size/upscale_factor),
         ToTensor(),
     ])
 
 
 def target_transform(crop_size, upscale_factor):
     return Compose([
-        Resize((crop_size, crop_size), interpolation=3),
-        #CenterCrop(crop_size),
+        Resize((1280, 1280), interpolation=3),
+        CenterCrop(crop_size),
         ToTensor(),
     ])
 
