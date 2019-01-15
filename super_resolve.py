@@ -13,7 +13,6 @@ import numpy as np
 from os import listdir, makedirs
 from os.path import join, exists
 from utils import save_image, save_output
-from data import get_sr_set
 
 # SR settings
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')

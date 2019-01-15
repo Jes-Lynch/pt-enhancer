@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
-parser.add_argument('--upscale_factor', type=int, required=True, help="super resolution upscale factor")
+parser.add_argument('--upscale_factor', type=int, default=8, required=True, help="super resolution upscale factor")
 parser.add_argument('--batchSize', type=int, default=10, help='training batch size')
 parser.add_argument('--testBatchSize', type=int, default=100, help='testing batch size')
 parser.add_argument('--nEpochs', type=int, default=2, help='number of epochs to train for')
@@ -51,7 +51,7 @@ optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 def train(epoch):
     epoch_loss = 0
     for iteration, batch in enumerate(training_data_loader, 1):
-        input, target = batch[0].to(device), batch[1].to(device)
+        input, target = batch[0].to(device), batch[3].to(device)
 
         optimizer.zero_grad()
         loss = criterion(model(input), target)
@@ -75,7 +75,7 @@ def test(epoch):
         counter = 1
         for batch in testing_data_loader:
             counter +=1
-            input, target = batch[0].to(device), batch[1].to(device)
+            input, target = batch[0].to(device), batch[3].to(device)
 
             prediction = model(input)
             predictions.append(prediction)
