@@ -31,7 +31,7 @@ def get_training_set(upscale_factor):
     root_dir = join("dataset", "kidney/images")
     highres_dir = join(root_dir, "highres")
     lowres_dir = join(root_dir, "lowres")
-    crop_size = calculate_valid_crop_size(1024, upscale_factor)
+    crop_size = calculate_valid_crop_size(1280, upscale_factor)
 
     return DatasetFromFolder(lowres_dir, highres_dir,
                              input_transform=input_transform(crop_size, upscale_factor),
@@ -42,7 +42,7 @@ def get_test_set(upscale_factor):
     root_dir = join("dataset", "kidney/images")
     highres_dir = join(root_dir, "highres")
     lowres_dir = join(root_dir, "lowres")
-    crop_size = calculate_valid_crop_size(1024, upscale_factor)
+    crop_size = calculate_valid_crop_size(1280, upscale_factor)
 
     return DatasetFromFolder(lowres_dir, highres_dir,
                              input_transform=input_transform(crop_size, upscale_factor),
