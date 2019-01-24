@@ -3,31 +3,59 @@ import torch.nn as nn
 import torch.nn.init as init
 
 
-class Net(nn.Module):
+class RNet(nn.Module):
     def __init__(self, upscale_factor):
-        super(Net, self).__init__()
+        super(RNet, self).__init__()
 
-        self.relu = nn.ReLU()
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride = 1, padding=1)
-        self.conv2 = nn.Conv2d(in_channels=64, out_channels=32, kernel_size=3, stride = 1, padding=1)
-        self.conv3 = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride = 1, padding=1)
-        self.conv4 = nn.Conv2d(in_channels=16, out_channels=8, kernel_size=3, stride = 1, padding=1)
-        self.conv5 = nn.Conv2d(in_channels=8, out_channels=upscale_factor**2, kernel_size=1, stride = 1, padding=0)
-        self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
-
+        # Layers for input
+        self.convLow1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.convLow2 = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
+        self.convLow3 = nn.Conv2d(in_channels=16, out_channels=(upscale_factor*2)**2, kernel_size=1, stride=1, padding=0)
+        # Layers for intermediate 1
+        self.convInt1_1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.convInt1_2 = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
+        self.convInt1_3 = nn.Conv2d(in_channels=16, out_channels=(upscale_factor*2)**2, kernel_size=1, stride=1, padding=0)
+        # Layers for intermediate 2
+        self.convInt2_1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.convInt2_2 = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
+        self.convInt2_3 = nn.Conv2d(in_channels=16, out_channels=(upscale_factor*2)**2, kernel_size=1, stride=1, padding=0)
+        #Other needed declarations
+        self.relu = nn.LeakyReLU()
+        self.pixel_shuffle = nn.PixelShuffle(upscale_factor*2)
         self._initialize_weights()
 
-    def forward(self, x):
-        x = self.relu(self.conv1(x))
-        x = self.relu(self.conv2(x))
-        x = self.relu(self.conv3(x))
-        x = self.relu(self.conv4(x))
-        x = self.pixel_shuffle(self.conv5(x))
+    def forward(self, x, i1, i2):
+        # First layer
+        i2 = self.relu(self.convInt2_1(i2))
+        i1 = self.relu(self.convInt1_1(i1))
+        x = self.relu(self.convLow1(x))
+
+        # Second layer
+        i2 = self.relu(self.convInt2_2(i2))
+        i1 = self.relu(self.convInt1_2(i1))
+        x = self.relu(self.convLow2(x))
+
+        # Third layer
+        i2 = self.relu(self.convInt2_3(i2))
+        i1 = self.relu(self.convInt1_3(i1))
+        x = self.relu(self.convLow3(x))
+
+        # Subpixel layer
+        i2 = self.pixel_shuffle(i2)
+        i1 = self.pixel_shuffle(i1)
+        x = self.pixel_shuffle(x)
+
         return x
 
     def _initialize_weights(self):
-        init.orthogonal_(self.conv1.weight, init.calculate_gain('relu'))
-        init.orthogonal_(self.conv2.weight, init.calculate_gain('relu'))
-        init.orthogonal_(self.conv3.weight, init.calculate_gain('relu'))
-        init.orthogonal_(self.conv4.weight, init.calculate_gain('relu'))
-        init.orthogonal_(self.conv5.weight)
+        init.orthogonal_(self.convLow1.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convLow2.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convLow3.weight, init.calculate_gain('leaky_relu'))
+
+        init.orthogonal_(self.convInt1_1.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt1_2.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt1_3.weight, init.calculate_gain('leaky_relu'))
+
+        init.orthogonal_(self.convInt2_1.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt2_2.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt2_3.weight, init.calculate_gain('leaky_relu'))

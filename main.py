@@ -2,7 +2,7 @@ from __future__ import print_function
 import argparse
 from data import get_training_set, get_test_set, input_transform
 from math import log10
-from model import Net
+from model import RNet
 import os
 
 import torch
@@ -37,11 +37,11 @@ device = torch.device("cuda" if opt.cuda else "cpu")
 print('===> Loading datasets')
 train_set = get_training_set(opt.upscale_factor)
 test_set = get_test_set(opt.upscale_factor)
-training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=False)
-testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.testBatchSize, shuffle=False)
+training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True)
+testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.testBatchSize, shuffle=True)
 
 print('===> Building model')
-model = Net(upscale_factor=opt.upscale_factor)
+model = RNet(upscale_factor=opt.upscale_factor)
 model.to(device)
 criterion = nn.MSELoss()
 
@@ -51,10 +51,10 @@ optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 def train(epoch):
     epoch_loss = 0
     for iteration, batch in enumerate(training_data_loader, 1):
-        input, target = batch[0].to(device), batch[3].to(device)
+        inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
 
         optimizer.zero_grad()
-        loss = criterion(model(input), target)
+        loss = criterion(model(inimg, int1, int2), target)
         epoch_loss += loss.item()
         loss.backward()
         optimizer.step()
@@ -75,11 +75,11 @@ def test(epoch):
         counter = 1
         for batch in testing_data_loader:
             counter +=1
-            input, target = batch[0].to(device), batch[3].to(device)
+            inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
 
-            prediction = model(input)
+            prediction = model(inimg, int1, int2)
             predictions.append(prediction)
-            inputs.append(input)
+            inputs.append(inimg)
             targets.append(target)
             mse = criterion(prediction, target)
             psnr = 10 * log10(1 / mse.item())
