@@ -40,4 +40,4 @@ optional arguments:
 
 ## Sample
 Kidney Tissue<br>
-![orig](https://github.com/Jes-Lynch/pt_enhancer/blob/master/example/example.png)<br>
+![orig](https://github.com/Jes-Lynch/pt_enhancer/blob/rcnn/example/example.png)<br>
