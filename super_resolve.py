@@ -1,72 +1,67 @@
 from __future__ import print_function
 import argparse
-import torch
-from torch.autograd import Variable
-from PIL import Image
-from torchvision.transforms import ToTensor
-import glob
-import os
-from os.path import basename
-
-
+from data import  get_test_set
 import numpy as np
-from os import listdir, makedirs
+import os
+from os import makedirs
 from os.path import join, exists
-from utils import save_image, save_output
+from PIL import Image
+import torch
+import torchvision.utils as tv
+from torch.utils.data import DataLoader
+
+
+from utils import save_output
+
 
 # SR settings
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
-parser.add_argument('--input_dir', type=str, required=True, help='input image to use')
-parser.add_argument('--ref_dir', type=str, required=True, help='high resolution version of input images')
+parser.add_argument('--upscale_factor', type=int, default=8, required=True, help="super resolution upscale factor")
 parser.add_argument('--model', type=str, required=True, help='model file to use')
 parser.add_argument('--output_dir', type=str, help='directory where output images are stored')
+parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
 parser.add_argument('--cuda', action='store_true', help='use cuda')
 opt = parser.parse_args()
 
-sr_set = opt.input_dir
 
-images = glob.glob(sr_set+"/*.png")
-
+test_set = get_test_set(8)
+testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=True)
+device = torch.device("cuda" if opt.cuda else "cpu")
 model_dir = join("checkpoints", opt.model)
+model = torch.load(model_dir)
+model.to(device)
 
-for image in images:
-    filename = os.fsdecode(image)
-    print(opt)
-    with open(image, 'rb') as file:
-        img = Image.open(filename).convert('YCbCr')
-    y, cb, cr = img.split()
 
-    model = torch.load(model_dir)
-    img_to_tensor = ToTensor()
-    input = img_to_tensor(y).view(1, -1, y.size[1], y.size[0])
-
-    if opt.cuda:
-        model = model.cuda()
-        input = input.cuda()
-
-    out = model(input)
-    out = out.cpu()
-    out_img_y = out[0].detach().numpy()
-    out_img_y *= 255.0
-    out_img_y = out_img_y.clip(0, 255)
-    out_img_y = Image.fromarray(np.uint8(out_img_y[0]), mode='L')
-
-    out_img_cb = cb.resize(out_img_y.size, Image.BICUBIC)
-    out_img_cr = cr.resize(out_img_y.size, Image.BICUBIC)
-    out_img = Image.merge('YCbCr', [out_img_y, out_img_cb, out_img_cr]).convert('RGB')
-
-    path = opt.ref_dir
-    new_filename = basename(filename)
-    print(filename)
-    low_img = Image.open(filename)
-    hr_img = Image.open(path + new_filename)
-
+def main():
+    counter = 0
     if not exists(opt.output_dir):
         makedirs(opt.output_dir)
+    with torch.no_grad():
+        for batch in testing_data_loader:
+            inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
+            prediction = model(inimg, int1, int2)
+            lowres_fname=(test_set.lowres_filenames[counter])
+            fname=lowres_fname[29:40]
+            in_filename = opt.output_dir + str(fname)
+            out_filename = opt.output_dir + 'out' + str(fname)
+            tg_filename = opt.output_dir + 'tg' + str(fname)
+            result_filename = 'Result_' + str(fname)
+            tv.save_image(inimg, in_filename)
+            tv.save_image(prediction, out_filename)
+            tv.save_image(target, tg_filename)
+            low_img = Image.open(in_filename).convert('L')
+            out_img = Image.open(out_filename).convert('L')
+            hr_img = Image.open(tg_filename).convert('L')
+            out_img = np.asarray(out_img)
+            low_img = np.asarray(low_img)
+            high_img = np.asarray(hr_img)
+            save_output(lr_img=low_img, prediction=out_img, hr_img=high_img,
+                        path=os.path.join(opt.output_dir, '%s' % result_filename))
+            os.remove(in_filename)
+            os.remove(out_filename)
+            os.remove(tg_filename)
+            counter += 1
 
-    out_img = np.asarray(out_img)
-    low_img = np.asarray(low_img)
-    high_img = np.asarray(hr_img)
 
-    save_image(image=out_img, path=os.path.join(opt.output_dir, '%s' % basename(filename)))
-    save_output(lr_img=low_img, prediction=out_img, hr_img=high_img, path=os.path.join(opt.output_dir, '%s' % basename(filename)))
+if __name__ == '__main__':
+    main()

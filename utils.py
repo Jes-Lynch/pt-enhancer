@@ -1,8 +1,6 @@
-import os
-from glob import glob
-
 import numpy as np
 import scipy.misc
+
 
 def save_output(lr_img, prediction, hr_img, path):
     h = prediction.shape[0]
@@ -19,9 +17,11 @@ def save_image(image, path, normalize=False):
         out_img = _intensity_normalization(out_img)
     return scipy.misc.imsave(path, out_img)
 
+
 def do_resize(x, shape):
     y = scipy.misc.imresize(x, shape, interp='bicubic')
     return y
+
 
 def _pre_process(images):
     pre_processed = _normalize(np.asarray(images))
@@ -36,9 +36,11 @@ def _intensity_normalization(image):
     image = np.where(image > threshold, (image - mean + 240), image)
     return image
 
+
 def _post_process(images):
     post_processed = _unnormalize(images)
     return post_processed.squeeze()
+
 
 def _unnormalize(image):
     return image
