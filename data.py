@@ -11,8 +11,8 @@ def calculate_valid_crop_size(crop_size, upscale_factor):
 #Input final size: 128
 def input_transform(crop_size, upscale_factor):
     return Compose([
-        Resize((int(1024/upscale_factor), int(1024/upscale_factor)), interpolation=3),
-        CenterCrop(crop_size/upscale_factor),
+        Resize((int(1024*0.25), int(1024*0.25)), interpolation=3),
+        CenterCrop(crop_size*0.25),
         ToTensor(),
     ])
 
@@ -20,8 +20,8 @@ def input_transform(crop_size, upscale_factor):
 #Intermediate 1 final size: 256
 def int1_transform(crop_size, upscale_factor):
     return Compose([
-        Resize((int(1024/(upscale_factor/2)), int(1024/(upscale_factor/2))), interpolation=3),
-        CenterCrop(crop_size/(upscale_factor/2)),
+        Resize((int(1024*0.5), int(1024*0.5)), interpolation=3),
+        CenterCrop(crop_size*0.5),
         ToTensor(),
     ])
 
@@ -29,8 +29,8 @@ def int1_transform(crop_size, upscale_factor):
 #Intermediate 2 final size: 512
 def int2_transform(crop_size, upscale_factor):
     return Compose([
-        Resize((int(1024/(upscale_factor/4)), int(1024/(upscale_factor/4))), interpolation=3),
-        CenterCrop(crop_size/(upscale_factor/4)),
+        Resize((int(1024*0.75), int(1024*0.75)), interpolation=3),
+        CenterCrop(crop_size*0.75),
         ToTensor(),
     ])
 
