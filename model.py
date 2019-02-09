@@ -40,6 +40,8 @@ class RNet(nn.Module):
         # First layer
         i2 = self.relu(self.convInt2First(i2))
         i2c = self.downsampleIntFirst(self.relu(i2))
+        # i2c size is ([batch size, 32, 728, 728])
+        # Need to reduce that to ([batch size, 1, 728, 728]) to use as input to the first conv layer
         i2c = self.flattenInt2First(i2c)
         # Other idea: Get i2c, don't flatten, instead do
         # i1 =  self.relu(self.convInt1First(i1)+i2c)
