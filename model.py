@@ -15,20 +15,14 @@ class RNet(nn.Module):
         self.convInt1First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.convInt1Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
         self.convInt1Third = nn.Conv2d(in_channels=16, out_channels=int((upscale_factor*2)**2), kernel_size=1, stride=1, padding=0)
-        self.flattenInt1First = nn.Conv2d(in_channels=32, out_channels=1, kernel_size=3, stride=1, padding=1)
-        self.flattenInt1Second = nn.Conv2d(in_channels=64, out_channels=16, kernel_size=3, stride=1, padding=1)
-        self.expandInt1 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
         # Layers for intermediate 2
         self.convInt2First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.convInt2Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
         self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=int((upscale_factor*2)**2), kernel_size=1, stride=1, padding=0)
-        self.flattenInt2First = nn.Conv2d(in_channels=32, out_channels=1, kernel_size=3, stride=1, padding=1)
-        self.flattenInt2Second = nn.Conv2d(in_channels=64, out_channels=16, kernel_size=3, stride=1, padding=1)
-        self.expandInt2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
         # Other needed declarations
-        self.relu = nn.LeakyReLU()
-        self.pixel_shuffle = nn.PixelShuffle(int(upscale_factor*2))
         self._initialize_weights()
+        self.pixel_shuffle = nn.PixelShuffle(int(upscale_factor * 2))
+        self.relu = nn.LeakyReLU()
         # Downsample layer
         self.downsampleLowFirst= Interpolate(size=(256, 256), mode='bilinear')
         self.downsampleLowSecond = Interpolate(size=(128, 128), mode='bilinear')
@@ -37,43 +31,39 @@ class RNet(nn.Module):
 
 
     def forward(self, x, i1, i2):
-        # First layer
+        # Operations on first layers
+        # Convolve on intermediate 2 input
         i2 = self.relu(self.convInt2First(i2))
-        i2c = self.downsampleIntFirst(self.relu(i2))
-        # i2c size is ([batch size, 32, 728, 728])
-        # Need to reduce that to ([batch size, 1, 728, 728]) to use as input to the first conv layer
-        i2c = self.flattenInt2First(i2c)
-        # Other idea: Get i2c, don't flatten, instead do
-        # i1 =  self.relu(self.convInt1First(i1)+i2c)
-        i1 =  self.relu(self.convInt1First(i1 + i2c))
-        i1c = self.downsampleLowFirst(self.relu(i1))
-        i1c = self.flattenInt1First(i1c)
-        i2c = self.downsampleLowFirst(i2c)
-        # In this case without the flatten layer this would be
-        # x = self.relu(self.convLowFirst(x) + i1c + i2c)
-        x = self.relu(self.convLowFirst(x + i1c + i2c))
+        # Perform relu on output of int2
+        # Downsample it to match the size of intermdeiate 1
+        i2rec = self.downsampleIntFirst(self.relu(i2))
+        # Convolve on i1, add the recurrent output of i2, perform relu
+        i1 =  self.relu(self.convInt1First(i1)+i2rec)
+        # Perform relu on output of int1
+        # Downsample it to match the size of low
+        i1rec = self.downsampleLowFirst(self.relu(i1))
+        # Downsample recurrent output of i2 to match low size
+        i2rec = self.downsampleLowFirst(i2rec)
+        # Convolve on low, add the recurrent output of i1 and i2, perform relu
+        x = self.relu(self.convLowFirst(x) + i1rec + i2rec)
 
 
-        # Second layer
+        # Operations on second layers
         i2 = self.relu(self.convInt2Second(i2))
-        i2c = self.downsampleIntFirst(self.relu(i2))
-        i2c = self.expandInt2(i2c)
-        i1 =  self.relu(self.convInt1Second(i1 + i2c))
-        i1c = self.downsampleLowFirst(self.relu(i1))
-        i1c = self.expandInt1(i1c)
-        i2c = self.downsampleLowFirst(i2c)
-        x = self.relu(self.convLowSecond(x + i1c + i2c))
+        i2rec = self.downsampleIntSecond(self.relu(i2))
+        i1 =  self.relu(self.convInt1Second(i1) + i2rec)
+        i1rec = self.downsampleLowSecond(self.relu(i1))
+        i2rec = self.downsampleLowSecond(i2rec)
+        x = self.relu(self.convLowSecond(x) + i1rec + i2rec)
 
 
-        # Third layer
+        # Operations on third layers
         i2 = self.relu(self.convInt2Third(i2))
-        i2c = self.downsampleIntSecond(self.relu(i2))
-        i2c = self.flattenInt2Second(i2c)
-        i1 = self.relu(self.convInt1Third(i1 + i2c))
-        i1c = self.downsampleLowSecond(self.relu(i1))
-        i1c = self.flattenInt1Second(i1c)
-        i2c = self.downsampleLowSecond(i2c)
-        x = self.relu(self.convLowThird(x + i1c + i2c))
+        i2rec = self.downsampleIntSecond(self.relu(i2))
+        i1 = self.relu(self.convInt1Third(i1) + i2rec)
+        i1rec = self.downsampleLowSecond(self.relu(i1))
+        i2rec = self.downsampleLowSecond(i2rec)
+        x = self.relu(self.convLowThird(x) + i1rec + i2rec)
 
 
         # Subpixel layer
