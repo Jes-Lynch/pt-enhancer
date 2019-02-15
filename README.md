@@ -30,13 +30,13 @@ optional arguments:
 `Example: pt_enhancer\dataset\kidney\images\highres\`
 
 ### Train
-`--upscale_factor 8 --batchSize 10 --nEpochs 1000 --lr 0.0001 --threads 5 --cuda --train`
+`python main.py --upscale_factor 4 --full_size 1024 --batchSize 8 --nEpochs 1000 --lr 0.001 --threads 4 --cuda --train`
 
 ### Test
-`--upscale_factor 8 --testBatchSize 1 --nEpochs 1000 --threads 5 --cuda`
+`python main.py --upscale_factor 4 --full_size 1024 --testBatchSize 10 --nEpochs 130 --threads 1 --cuda`
 
 ### Super Resolve
-`python super_resolve.py --upscale_factor 8 --model model_epoch_100.pth --output_dir results/ --threads 1 --cuda`
+`python super_resolve.py --upscale_factor 4 --model model_epoch_100.pth --output_dir results/ --threads 1 --cuda`
 
 ## Sample
 Kidney Tissue<br>

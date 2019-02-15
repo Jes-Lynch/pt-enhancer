@@ -17,6 +17,7 @@ from utils import save_output
 # SR settings
 parser = argparse.ArgumentParser(description='PyTorch Super Res Example')
 parser.add_argument('--upscale_factor', type=int, default=8, required=True, help="super resolution upscale factor")
+parser.add_argument('--full_size', type=int, default=1024, required=True, help="Size of target image")
 parser.add_argument('--model', type=str, required=True, help='model file to use')
 parser.add_argument('--output_dir', type=str, help='directory where output images are stored')
 parser.add_argument('--threads', type=int, default=4, help='number of threads for data loader to use')
@@ -24,7 +25,7 @@ parser.add_argument('--cuda', action='store_true', help='use cuda')
 opt = parser.parse_args()
 
 
-test_set = get_test_set(8)
+test_set = get_test_set(8, opt.full_size)
 testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=True)
 device = torch.device("cuda" if opt.cuda else "cpu")
 model_dir = join("checkpoints", opt.model)
