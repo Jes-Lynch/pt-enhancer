@@ -60,7 +60,7 @@ class RNet(nn.Module):
         # Subpixel layer
         i2 = self.subpixel_int2(i2)
         i1 = self.subpixel_int1(i1)
-        x = self.subpixel_int2(x)
+        x = self.subpixel_low(x)
 
         return i2, i1, x
 
