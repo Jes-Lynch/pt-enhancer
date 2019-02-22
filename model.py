@@ -9,25 +9,25 @@ class RNet(nn.Module):
 
         # Layers for input
         self.convLowFirst = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.convLowSecond = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
+        self.convLowSecond = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
         self.convLowThird = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         # Layers for intermediate 1
         self.convInt1First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.convInt1Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
-        self.convInt1Third = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
+        self.convInt1Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.convInt1Third = nn.Conv2d(in_channels=16, out_channels=(int(upscale_factor)**2), kernel_size=1, stride=1, padding=0)
         # Layers for intermediate 2
         self.convInt2First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.convInt2Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=2, stride=2, padding=0)
-        self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
+        self.convInt2Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=(int(upscale_factor)**2), kernel_size=1, stride=1, padding=0)
         # Other needed declarations
         self._initialize_weights()
-        self.pixel_shuffle = nn.PixelShuffle(upscale_factor)
+        self.subpixel_int2 = nn.PixelShuffle(int(upscale_factor / 4))
+        self.subpixel_int1 = nn.PixelShuffle(int(upscale_factor / 2))
+        self.subpixel_low = nn.PixelShuffle(upscale_factor)
         self.relu = nn.LeakyReLU()
         # Downsample layer
-        self.downsampleLowFirst= Interpolate(size=(int(full_size*0.25), int(full_size*0.25)), mode='bilinear')
-        self.downsampleLowSecond = Interpolate(size=(int(full_size*0.125), int(full_size*0.125)), mode='bilinear')
-        self.downsampleIntFirst = Interpolate(size=(int(full_size*0.5), int(full_size*0.5)), mode='bilinear')
-        self.downsampleIntSecond = Interpolate(size=(int(full_size*0.25), int(full_size*0.25)), mode='bilinear')
+        self.downsampleLow = Interpolate(size=(int(full_size / upscale_factor), int(full_size / upscale_factor)), mode='bilinear')
+        self.downsampleInt = Interpolate(size=(int(full_size / (upscale_factor / 2)), int(full_size / (upscale_factor / 2))), mode='bilinear')
 
 
     def forward(self, x, i1, i2):
@@ -36,41 +36,44 @@ class RNet(nn.Module):
         i2 = self.relu(self.convInt2First(i2))
         # Perform relu on output of int2
         # Downsample it to match the size of intermdeiate 1
-        i2rec = self.downsampleIntFirst(self.relu(i2))
+        i2rec = self.downsampleInt(self.relu(i2))
         # Convolve on i1, add the recurrent output of i2, perform relu
         i1 =  self.relu(self.convInt1First(i1)+i2rec)
         # Perform relu on output of int1
         # Downsample it to match the size of low
-        i1rec = self.downsampleLowFirst(self.relu(i1))
+        i1rec = self.downsampleLow(self.relu(i1))
         # Downsample recurrent output of i2 to match low size
-        i2rec = self.downsampleLowFirst(i2rec)
+        i2rec = self.downsampleLow(i2rec)
         # Convolve on low, add the recurrent output of i1 and i2, perform relu
         x = self.relu(self.convLowFirst(x) + i1rec + i2rec)
 
 
         # Operations on second layers
         i2 = self.relu(self.convInt2Second(i2))
-        i2rec = self.downsampleIntSecond(self.relu(i2))
+        i2rec = self.downsampleInt(self.relu(i2))
         i1 =  self.relu(self.convInt1Second(i1) + i2rec)
-        i1rec = self.downsampleLowSecond(self.relu(i1))
-        i2rec = self.downsampleLowSecond(i2rec)
+        i1rec = self.downsampleLow(self.relu(i1))
+        i2rec = self.downsampleLow(i2rec)
         x = self.relu(self.convLowSecond(x) + i1rec + i2rec)
 
 
         # Operations on third layers
         i2 = self.relu(self.convInt2Third(i2))
-        i2rec = self.downsampleIntSecond(self.relu(i2))
+        i2rec = self.downsampleInt(self.relu(i2))
         i1 = self.relu(self.convInt1Third(i1) + i2rec)
-        i1rec = self.downsampleLowSecond(self.relu(i1))
-        i2rec = self.downsampleLowSecond(i2rec)
+        i1rec = self.downsampleLow(self.relu(i1))
+        i2rec = self.downsampleLow(i2rec)
         x = self.relu(self.convLowThird(x) + i1rec + i2rec)
 
 
         # Subpixel layer
-        i2 = self.downsampleIntSecond(self.relu(i2))
-        i2 = self.pixel_shuffle(i2)
+        i2 = self.subpixel_int2(i2)
+        i1 = self.subpixel_int1(i1)
+        x = self.subpixel_low(x)
 
-        return i2
+
+        return i2, i1, x
+
 
     def _initialize_weights(self):
         init.orthogonal_(self.convLowFirst.weight, init.calculate_gain('leaky_relu'))
