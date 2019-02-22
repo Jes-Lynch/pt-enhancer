@@ -55,7 +55,8 @@ def train(epoch):
         inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
 
         optimizer.zero_grad()
-        loss = criterion(model(inimg, int1, int2), target)
+        int2Result, int1Result, lowResult = model(inimg, int1, int2)
+        loss = criterion(int2Result, target)
         epoch_loss += loss.item()
         loss.backward()
         optimizer.step()
@@ -78,11 +79,11 @@ def test(epoch):
             counter +=1
             inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
 
-            prediction = model(inimg, int1, int2)
-            predictions.append(prediction)
+            int2Result, int1Result, lowResult = model(inimg, int1, int2)
+            predictions.append(int2Result)
             inputs.append(inimg)
             targets.append(target)
-            mse = criterion(prediction, target)
+            mse = criterion(int2Result, target)
             psnr = 10 * log10(1 / mse.item())
             avg_psnr += psnr
     print("===> Avg. PSNR: {:.4f} dB".format(avg_psnr / len(testing_data_loader)))
@@ -105,18 +106,18 @@ def main():
         epoch = opt.nEpochs
         predictions, inputs, targets = test(epoch)
         x=(len(testing_data_loader.dataset))
-        if not os.path.exists('dataset/kidney/images/prediction{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/images/prediction{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/images/input{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/images/input{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/images/target{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/images/target{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/prediction{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/prediction{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/input{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/input{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/target{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/target{}/'.format(epoch))
         for i in range(x):
             lowres_fname=(test_set.lowres_filenames[i]);
             fname=lowres_fname[29:39]
-            filename='dataset/kidney/images/prediction{}/'.format(epoch)+str(fname)
-            in_filename = 'dataset/kidney/images/input{}/'.format(epoch) + str(fname)
-            tg_filename = 'dataset/kidney/images/target{}/'.format(epoch) + str(fname)
+            filename='dataset/kidney/test/prediction{}/'.format(epoch)+str(fname)
+            in_filename = 'dataset/kidney/test/input{}/'.format(epoch) + str(fname)
+            tg_filename = 'dataset/kidney/test/target{}/'.format(epoch) + str(fname)
             print(filename)
             tv.save_image(predictions[i],filename)
             tv.save_image(inputs[i], in_filename)
