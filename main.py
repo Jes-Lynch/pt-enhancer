@@ -39,7 +39,7 @@ print('===> Loading datasets')
 train_set = get_training_set(opt.upscale_factor, opt.full_size)
 test_set = get_test_set(opt.upscale_factor, opt.full_size)
 training_data_loader = DataLoader(dataset=train_set, num_workers=opt.threads, batch_size=opt.batchSize, shuffle=True)
-testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.testBatchSize, shuffle=True)
+testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=opt.testBatchSize, shuffle=False)
 
 print('===> Building model')
 model = RNet(upscale_factor=opt.upscale_factor, full_size=opt.full_size)
@@ -113,16 +113,21 @@ def main():
         if not os.path.exists('dataset/kidney/test/target{}/'.format(epoch)):
             os.makedirs('dataset/kidney/test/target{}/'.format(epoch))
         for i in range(x):
-            lowres_fname=(test_set.lowres_filenames[i]);
-            fname=lowres_fname[29:39]
+            lowres_fname=(test_set.lowres_filenames[i])
+            fname=lowres_fname[27:39]
             filename='dataset/kidney/test/prediction{}/'.format(epoch)+str(fname)
             in_filename = 'dataset/kidney/test/input{}/'.format(epoch) + str(fname)
             tg_filename = 'dataset/kidney/test/target{}/'.format(epoch) + str(fname)
             print(filename)
-            tv.save_image(predictions[i],filename)
+            print(predictions[i].type())
+            print(targets[i].type())
+            print(inputs[i].type())
+            print(predictions[i].size())
+            print(targets[i].size())
+            print(inputs[i].size())
             tv.save_image(inputs[i], in_filename)
             tv.save_image(targets[i], tg_filename)
-
+            tv.save_image(predictions[i],filename)
 
 if __name__ == '__main__':
     main()
