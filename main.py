@@ -59,7 +59,7 @@ def train(epoch):
 
         optimizer.zero_grad()
         int2Result, int1Result, lowResult = model(inimg, int1, int2)
-        loss = criterion(lowResult, target)
+        loss = criterion(int2Result, target)
         epoch_loss += loss.item()
         loss.backward()
         optimizer.step()
@@ -73,7 +73,9 @@ def test(epoch):
     avg_psnr = 0
     model = torch.load("checkpoints/model_epoch_{}.pth".format(epoch))
     model.to(device)
-    predictions = []
+    int2Pred = []
+    int1Pred = []
+    lowPred = []
     inputs = []
     targets = []
     with torch.no_grad():
@@ -83,14 +85,16 @@ def test(epoch):
             inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
 
             int2Result, int1Result, lowResult = model(inimg, int1, int2)
-            predictions.append(lowResult)
+            int2Pred.append(int2Result)
+            int1Pred.append(int1Result)
+            lowPred.append(lowResult)
             inputs.append(inimg)
             targets.append(target)
-            mse = criterion(lowResult, target)
+            mse = criterion(int2Result, target)
             psnr = 10 * log10(1 / mse.item())
             avg_psnr += psnr
     print("===> Avg. PSNR: {:.4f} dB".format(avg_psnr / len(testing_data_loader)))
-    return predictions, inputs, targets
+    return int2Pred, int1Pred, lowPred, inputs, targets
 
 
 def checkpoint(epoch):
@@ -107,10 +111,14 @@ def main():
             checkpoint(epoch)
     else:
         epoch = opt.nEpochs
-        predictions, inputs, targets = test(epoch)
+        int2Pred, int1Pred, lowPred, inputs, targets = test(epoch)
         x=(len(testing_data_loader.dataset))
-        if not os.path.exists('dataset/kidney/test/prediction{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/prediction{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/lowprediction{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/lowprediction{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/int1prediction{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/int1prediction{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/int2prediction{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/int2prediction{}/'.format(epoch))
         if not os.path.exists('dataset/kidney/test/input{}/'.format(epoch)):
             os.makedirs('dataset/kidney/test/input{}/'.format(epoch))
         if not os.path.exists('dataset/kidney/test/target{}/'.format(epoch)):
@@ -118,13 +126,17 @@ def main():
         for i in range(x):
             lowres_fname = (test_set.lowres_filenames[i])
             fname = lowres_fname[27:39]
-            filename = 'dataset/kidney/test/prediction{}/'.format(epoch) + str(fname)
+            filename = 'dataset/kidney/test/lowprediction{}/'.format(epoch) + str(fname)
+            i1filename = 'dataset/kidney/test/int1prediction{}/'.format(epoch) + str(fname)
+            i2filename = 'dataset/kidney/test/int2prediction{}/'.format(epoch) + str(fname)
             in_filename = 'dataset/kidney/test/input{}/'.format(epoch) + str(fname)
             tg_filename = 'dataset/kidney/test/target{}/'.format(epoch) + str(fname)
             print(filename)
             tv.save_image(inputs[i], in_filename)
             tv.save_image(targets[i], tg_filename)
-            tv.save_image(predictions[i], filename)
+            tv.save_image(lowPred[i], filename)
+            tv.save_image(int1Pred[i], i1filename)
+            tv.save_image(int2Pred[i], i2filename)
             low_img = Image.open(in_filename).convert('L')
             low_img = low_img.resize((opt.full_size, opt.full_size), Image.BICUBIC)
             low_img.save(in_filename)
