@@ -108,6 +108,9 @@ class RNet(nn.Module):
         init.orthogonal_(self.convInt2Third.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convInt2Fourth.weight, init.calculate_gain('leaky_relu'))
 
+        init.orthogonal_(self.resConv1.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.resConv2.weight, init.calculate_gain('relu'))
+
 
 class Interpolate(nn.Module):
     def __init__(self, size, mode):
