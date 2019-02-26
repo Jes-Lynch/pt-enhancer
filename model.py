@@ -21,18 +21,30 @@ class RNet(nn.Module):
         self.convInt2Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
         self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=(int(upscale_factor)**2), kernel_size=1, stride=1, padding=0)
         self.convInt2Fourth = nn.Conv2d(in_channels=upscale_factor**2, out_channels=(int(upscale_factor/4)**2), kernel_size=1, stride=1, padding=0)
+        # Residual layers
+        self.resConv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True)
+        self.resConv2 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1, bias=True)
+        self.resBN = nn.BatchNorm2d(32, eps=0.0001, momentum = 0.95)
         # Other needed declarations
         self._initialize_weights()
         self.subpixel_int2 = nn.PixelShuffle(int(upscale_factor / 4))
         self.subpixel_int1 = nn.PixelShuffle(int(upscale_factor / 2))
         self.subpixel_low = nn.PixelShuffle(upscale_factor)
         self.relu = nn.LeakyReLU()
+        self.resrelu = nn.ReLU()
         # Downsample layer
         self.downsampleLow = Interpolate(size=(int(full_size / upscale_factor), int(full_size / upscale_factor)), mode='bilinear')
         self.downsampleInt = Interpolate(size=(int(full_size / (upscale_factor / 2)), int(full_size / (upscale_factor / 2))), mode='bilinear')
 
 
     def forward(self, x, i1, i2):
+        # Operations on residual layers
+        xUp =  self.downsampleInt(x)
+        resTarget = i1 - xUp
+        xRes = self.resRelu1(self.resConv1(x))
+        xRes = self.resRelu1(self.resBN(self.resConv1(xRes)))
+
+
         # Operations on first layers
         # Convolve on intermediate 2 input
         i2 = self.relu(self.convInt2First(i2))
@@ -67,16 +79,18 @@ class RNet(nn.Module):
         i2rec = self.downsampleLow(i2rec)
         x = self.relu(self.convLowThird(x) + i1rec + i2rec)
 
+
         # Operations on fourth layers
         i2 = self.relu(self.convInt2Fourth(i2))
         i1 = self.relu(self.convInt1Fourth(i1))
+
 
         # Subpixel layer
         i2 = self.subpixel_int2(i2)
         i1 = self.subpixel_int1(i1)
         x = self.subpixel_low(x)
 
-        return i2, i1, x
+        return i2, i1, x, xRes
 
 
     def _initialize_weights(self):
