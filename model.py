@@ -33,16 +33,18 @@ class RNet(nn.Module):
         self.relu = nn.LeakyReLU()
         self.resrelu = nn.ReLU()
         # Downsample layer
-        self.downsampleLow = Interpolate(size=(int(full_size / upscale_factor), int(full_size / upscale_factor)), mode='bilinear')
-        self.downsampleInt = Interpolate(size=(int(full_size / (upscale_factor / 2)), int(full_size / (upscale_factor / 2))), mode='bilinear')
+        self.resizeLow = Interpolate(size=(int(full_size / upscale_factor), int(full_size / upscale_factor)), mode='bilinear')
+        self.resizeInt1 = Interpolate(size=(int(full_size / (upscale_factor / 2)), int(full_size / (upscale_factor / 2))), mode='bilinear')
+        self.resizeInt2 = Interpolate(size=(int(full_size / (upscale_factor / 4)), int(full_size / (upscale_factor / 4))), mode='bilinear')
+        self.resizeTarget = Interpolate(size=(int(full_size / (upscale_factor / upscale_factor)), int(full_size / (upscale_factor / upscale_factor))), mode='bilinear')
 
 
     def forward(self, x, i1, i2):
         # Operations on residual layers
-        xUp =  self.downsampleInt(x)
-        resTarget = i1 - xUp
-        xRes = self.resRelu1(self.resConv1(x))
-        xRes = self.resRelu1(self.resBN(self.resConv1(xRes)))
+        #xUp =  self.resizeInt(x)
+        #xRes = i1 - xUp
+        #xRes = self.resRelu1(self.resConv1(xRes))
+        #xRes = self.resRelu1(self.resBN(self.resConv1(xRes)))
 
 
         # Operations on first layers
@@ -50,33 +52,33 @@ class RNet(nn.Module):
         i2 = self.relu(self.convInt2First(i2))
         # Perform relu on output of int2
         # Downsample it to match the size of intermdeiate 1
-        i2rec = self.downsampleInt(self.relu(i2))
+        i2rec = self.resizeInt1(self.relu(i2))
         # Convolve on i1, add the recurrent output of i2, perform relu
         i1 =  self.relu(self.convInt1First(i1)+i2rec)
         # Perform relu on output of int1
         # Downsample it to match the size of low
-        i1rec = self.downsampleLow(self.relu(i1))
+        i1rec = self.resizeLow(self.relu(i1))
         # Downsample recurrent output of i2 to match low size
-        i2rec = self.downsampleLow(i2rec)
+        i2rec = self.resizeLow(i2rec)
         # Convolve on low, add the recurrent output of i1 and i2, perform relu
         x = self.relu(self.convLowFirst(x) + i1rec + i2rec)
 
 
         # Operations on second layers
         i2 = self.relu(self.convInt2Second(i2))
-        i2rec = self.downsampleInt(self.relu(i2))
+        i2rec = self.resizeInt1(self.relu(i2))
         i1 =  self.relu(self.convInt1Second(i1) + i2rec)
-        i1rec = self.downsampleLow(self.relu(i1))
-        i2rec = self.downsampleLow(i2rec)
+        i1rec = self.resizeLow(self.relu(i1))
+        i2rec = self.resizeLow(i2rec)
         x = self.relu(self.convLowSecond(x) + i1rec + i2rec)
 
 
         # Operations on third layers
         i2 = self.relu(self.convInt2Third(i2))
-        i2rec = self.downsampleInt(self.relu(i2))
+        i2rec = self.resizeInt1(self.relu(i2))
         i1 = self.relu(self.convInt1Third(i1) + i2rec)
-        i1rec = self.downsampleLow(self.relu(i1))
-        i2rec = self.downsampleLow(i2rec)
+        i1rec = self.resizeLow(self.relu(i1))
+        i2rec = self.resizeLow(i2rec)
         x = self.relu(self.convLowThird(x) + i1rec + i2rec)
 
 
@@ -90,7 +92,7 @@ class RNet(nn.Module):
         i1 = self.subpixel_int1(i1)
         x = self.subpixel_low(x)
 
-        return i2, i1, x, xRes
+        return i2, i1, x
 
 
     def _initialize_weights(self):
