@@ -90,7 +90,7 @@ def train(epoch):
 
 def test(epoch):
     avg_psnr = 0
-    model = torch.load("checkpoints/model_epoch_{}.pth".format(epoch))
+    model = torch.load("rrcnn_checkpoints/model_epoch_{}.pth".format(epoch))
     model.to(device)
     int2Pred = []
     int1Pred = []
@@ -117,9 +117,9 @@ def test(epoch):
 
 
 def checkpoint(epoch):
-    if not os.path.exists('checkpoints'):
-        os.makedirs('checkpoints')
-    model_out_path = "checkpoints/model_epoch_{}.pth".format(epoch)
+    if not os.path.exists('rrcnn_checkpoints'):
+        os.makedirs('rrcnn_checkpoints')
+    model_out_path = "rrcnn_checkpoints/model_epoch_{}.pth".format(epoch)
     torch.save(model, model_out_path)
     print("Checkpoint saved to {}".format(model_out_path))
 
