@@ -135,24 +135,24 @@ def main():
         epoch = opt.nEpochs
         int2Pred, int1Pred, lowPred, inputs, targets = test(epoch)
         x=(len(testing_data_loader.dataset))
-        if not os.path.exists('dataset/kidney/test/lowprediction{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/lowprediction{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/int1prediction{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/int1prediction{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/int2prediction{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/int2prediction{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/input{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/input{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/target{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/target{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_low{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_low{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_int1{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_int1{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_int2{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_int2{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_input{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_input{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_target{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_target{}/'.format(epoch))
         for i in range(x):
             lowres_fname = (test_set.lowres_filenames[i])
             fname = lowres_fname[27:39]
-            filename = 'dataset/kidney/test/lowprediction{}/'.format(epoch) + str(fname)
-            i1filename = 'dataset/kidney/test/int1prediction{}/'.format(epoch) + str(fname)
-            i2filename = 'dataset/kidney/test/int2prediction{}/'.format(epoch) + str(fname)
-            in_filename = 'dataset/kidney/test/input{}/'.format(epoch) + str(fname)
-            tg_filename = 'dataset/kidney/test/target{}/'.format(epoch) + str(fname)
+            filename = 'dataset/kidney/test/rcnn_low{}/'.format(epoch) + str(fname)
+            i1filename = 'dataset/kidney/test/rcnn_int1{}/'.format(epoch) + str(fname)
+            i2filename = 'dataset/kidney/test/rcnn_int2{}/'.format(epoch) + str(fname)
+            in_filename = 'dataset/kidney/test/rcnn_input{}/'.format(epoch) + str(fname)
+            tg_filename = 'dataset/kidney/test/rcnn_target{}/'.format(epoch) + str(fname)
             print(filename)
             tv.save_image(inputs[i], in_filename)
             tv.save_image(targets[i], tg_filename)
