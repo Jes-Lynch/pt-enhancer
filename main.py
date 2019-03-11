@@ -1,18 +1,15 @@
 from __future__ import print_function
 import argparse
-from data import get_training_set, get_test_set, input_transform
+from data import get_training_set, get_test_set
 from math import log10
 from model import RNet
 import os
 from PIL import Image
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.transforms import Compose, ToPILImage, ToTensor, Resize
 import torchvision.utils as tv
 from torch.utils.data import DataLoader
-from utils import save_image
 
 
 # Training settings

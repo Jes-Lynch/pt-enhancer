@@ -85,20 +85,10 @@ class RNet(nn.Module):
         x = self.subpixel_low(xRes + self.convLowThird(x) + i1rec + i2rec)
 
 
-        # Residual addition
-        #x = x + xRes
-        #i1 = i1 + i1Res
-
-
         # Operations on fourth layers
         i2 = self.subpixel_int2(self.convInt2Fourth(i2))
         i1 = self.subpixel_int1(self.convInt1Fourth(i1))
 
-
-        # Subpixel layer
-        #i2 = self.subpixel_int2(i2)
-        #i1 = self.subpixel_int1(i1)
-        #x = self.subpixel_low(x)
 
         return i2, i1, x
 
