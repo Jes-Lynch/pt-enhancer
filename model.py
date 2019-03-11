@@ -65,16 +65,11 @@ class RNet(nn.Module):
         i1 = self.relu(self.convInt1Third(i1) + i2rec)
         i1rec = self.downsampleLow(self.relu(i1))
         i2rec = self.downsampleLow(i2rec)
-        x = self.relu(self.convLowThird(x) + i1rec + i2rec)
+        x = self.subpixel_low(self.relu(self.convLowThird(x) + i1rec + i2rec))
 
         # Operations on fourth layers
-        i2 = self.relu(self.convInt2Fourth(i2))
-        i1 = self.relu(self.convInt1Fourth(i1))
-
-        # Subpixel layer
-        i2 = self.subpixel_int2(i2)
-        i1 = self.subpixel_int1(i1)
-        x = self.subpixel_low(x)
+        i2 = self.subpixel_int2(self.relu(self.convInt2Fourth(i2)))
+        i1 = self.subpixel_int1(self.relu(self.convInt1Fourth(i1)))
 
         return i2, i1, x
 

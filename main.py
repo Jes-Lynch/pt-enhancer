@@ -48,30 +48,51 @@ print('===> Building model')
 model = RNet(upscale_factor=opt.upscale_factor, full_size=opt.full_size)
 model.to(device)
 criterion = nn.MSELoss()
-
-optimizer = optim.Adam(model.parameters(), lr=opt.lr)
+#Three optimizers, one for each output
+optimizerLow = optim.Adam(model.parameters(), lr=opt.lr)
+optimizerInt1 = optim.Adam(model.parameters(), lr=opt.lr)
+optimizerInt2 = optim.Adam(model.parameters(), lr=opt.lr)
 
 
 def train(epoch):
-    epoch_loss = 0
+    low_loss = 0
+    int1_loss = 0
+    int2_loss = 0
     for iteration, batch in enumerate(training_data_loader, 1):
         inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
+        epochloss = 0
 
-        optimizer.zero_grad()
+        #Run through the model, optrimizes from int2 to int2 and finally the lowest resolution input
+        optimizerLow.zero_grad()
+        optimizerInt1.zero_grad()
+        optimizerInt2.zero_grad()
         int2Result, int1Result, lowResult = model(inimg, int1, int2)
         loss = criterion(int2Result, target)
-        epoch_loss += loss.item()
+        int2_loss += loss.item()
+        epochloss += loss.item()
+        loss.backward(retain_graph=True)
+        optimizerInt2.step()
+        loss = criterion(int1Result, target)
+        int1_loss += loss.item()
+        epochloss += loss.item()
+        loss.backward(retain_graph=True)
+        optimizerInt1.step()
+        loss = criterion(lowResult, target)
+        low_loss += loss.item()
+        epochloss += loss.item()
         loss.backward()
-        optimizer.step()
+        optimizerLow.step()
 
-        print("===> Epoch[{}]({}/{}): Loss: {:.4f}".format(epoch, iteration, len(training_data_loader), loss.item()))
+        print("===> Epoch[{}]({}/{}): Loss: {:.4f}".format(epoch, iteration, len(training_data_loader), epochloss/3))
 
-    print("===> Epoch {} Complete: Avg. Loss: {:.4f}".format(epoch, epoch_loss / len(training_data_loader)))
+    print("===> Epoch {} Complete: Avg. Low Loss: {:.4f}".format(epoch, low_loss / len(training_data_loader)))
+    print("===> Epoch {} Complete: Avg. Int1 Loss: {:.4f}".format(epoch, int1_loss / len(training_data_loader)))
+    print("===> Epoch {} Complete: Avg. Int2 Loss: {:.4f}".format(epoch, int2_loss / len(training_data_loader)))
 
 
 def test(epoch):
     avg_psnr = 0
-    model = torch.load("checkpoints/model_epoch_{}.pth".format(epoch))
+    model = torch.load("rcnn_checkpoints/model_epoch_{}.pth".format(epoch))
     model.to(device)
     int2Pred = []
     int1Pred = []
@@ -98,11 +119,12 @@ def test(epoch):
 
 
 def checkpoint(epoch):
-    if not os.path.exists('checkpoints'):
-        os.makedirs('checkpoints')
-    model_out_path = "checkpoints/model_epoch_{}.pth".format(epoch)
+    if not os.path.exists('rcnn_checkpoints'):
+        os.makedirs('rcnn_checkpoints')
+    model_out_path = "rcnn_checkpoints/model_epoch_{}.pth".format(epoch)
     torch.save(model, model_out_path)
     print("Checkpoint saved to {}".format(model_out_path))
+
 
 def main():
     if opt.train:
