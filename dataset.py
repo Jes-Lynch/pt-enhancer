@@ -16,13 +16,11 @@ def load_img(filepath):
 
 
 class DatasetFromFolder(data.Dataset):
-    def __init__(self, lowres_dir, int1_dir, int2_dir, highres_dir, input_transform=None, int1_transform=None, int2_transform=None, target_transform=None):
+    def __init__(self, lowres_dir, highres_dir, input_transform=None, target_transform=None):
         super(DatasetFromFolder, self).__init__()
         self.highres_filenames = [join(highres_dir, x) for x in listdir(highres_dir) if is_image_file(x)]
         self.lowres_filenames = [join(lowres_dir, x) for x in listdir(lowres_dir) if is_image_file(x)]
         self.input_transform = input_transform
-        self.int1_transform = int1_transform
-        self.int2_transform = int2_transform
         self.target_transform = target_transform
 
     def __getitem__(self, index):

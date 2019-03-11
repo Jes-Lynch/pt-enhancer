@@ -68,7 +68,7 @@ def train(epoch):
 
 def test(epoch):
     avg_psnr = 0
-    model = torch.load("siamese_checkpoints/model_epoch_{}.pth".format(epoch))
+    model = torch.load("checkpoints/model_epoch_{}.pth".format(epoch))
     model.to(device)
     lowPred = []
     inputs = []
@@ -77,10 +77,9 @@ def test(epoch):
         counter = 1
         for batch in testing_data_loader:
             counter += 1
-            inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(
-                device)
+            inimg, target = batch[0].to(device), batch[1].to(device)
 
-            lowResult = model(inimg, int1, int2)
+            lowResult = model(inimg)
             lowPred.append(lowResult)
             inputs.append(inimg)
             targets.append(target)
