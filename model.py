@@ -14,12 +14,12 @@ class RNet(nn.Module):
         # Layers for intermediate 1
         self.convInt1First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.convInt1Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
-        self.convInt1Third = nn.Conv2d(in_channels=16, out_channels=(int(upscale_factor)**2), kernel_size=1, stride=1, padding=0)
+        self.convInt1Third = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         self.convInt1Fourth = nn.Conv2d(in_channels=upscale_factor**2, out_channels=(int(upscale_factor/2)**2), kernel_size=1, stride=1, padding=0)
         # Layers for intermediate 2
         self.convInt2First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.convInt2Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
-        self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=(int(upscale_factor)**2), kernel_size=1, stride=1, padding=0)
+        self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         self.convInt2Fourth = nn.Conv2d(in_channels=upscale_factor**2, out_channels=(int(upscale_factor/4)**2), kernel_size=1, stride=1, padding=0)
         # Residual layers
         self.resConv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True)
@@ -32,13 +32,13 @@ class RNet(nn.Module):
         self.subpixel_low = nn.PixelShuffle(upscale_factor)
         self.relu = nn.LeakyReLU()
         self.resrelu = nn.ReLU()
-        # Downsample layer
+        # Downsample layers
         self.resizeLow = Interpolate(size=(int(full_size / upscale_factor), int(full_size / upscale_factor)), mode='bilinear')
         self.resizeInt1 = Interpolate(size=(int(full_size / (upscale_factor / 2)), int(full_size / (upscale_factor / 2))), mode='bilinear')
         self.resizeInt2 = Interpolate(size=(int(full_size / (upscale_factor / 4)), int(full_size / (upscale_factor / 4))), mode='bilinear')
 
 
-    def forward(self, x, i1, i2, target):
+    def forward(self, x, i1, i2):
         # Operations on residual layers
         i1Down =  self.resizeLow(i1)
         xRes = i1Down - x
@@ -48,12 +48,6 @@ class RNet(nn.Module):
         i1Res = i2Down - i1
         i1Res = self.resrelu(self.resConv1(i1Res))
         i1Res = self.resrelu(self.resBN(self.resConv2(i1Res)))
-        targetDown = self.resizeInt2(target)
-        i2Res = targetDown - i2
-        i2Res = self.resrelu(self.resConv1(i2Res))
-        i2Res = self.resrelu(self.resBN(self.resConv2(i2Res)))
-
-
 
 
         # Operations on first layers
@@ -94,7 +88,6 @@ class RNet(nn.Module):
         # Residual addition
         x = x + xRes
         i1 = i1 + i1Res
-        i2 = i2 + i2Res
 
 
         # Operations on fourth layers
