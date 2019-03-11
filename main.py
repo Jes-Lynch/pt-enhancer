@@ -62,7 +62,7 @@ def train(epoch):
         optimizerLow.zero_grad()
         optimizerInt1.zero_grad()
         optimizerInt2.zero_grad()
-        int2Result, int1Result, lowResult = model(inimg, int1, int2, target)
+        int2Result, int1Result, lowResult = model(inimg, int1, int2)
         loss = criterion(int2Result, target)
         int2_loss += loss.item()
         epochloss += loss.item()
@@ -101,7 +101,7 @@ def test(epoch):
             inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(
                 device)
 
-            int2Result, int1Result, lowResult = model(inimg, int1, int2, target)
+            int2Result, int1Result, lowResult = model(inimg, int1, int2)
             int2Pred.append(int2Result)
             int1Pred.append(int1Result)
             lowPred.append(lowResult)
