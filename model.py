@@ -79,26 +79,26 @@ class RNet(nn.Module):
         # Operations on third layers
         i2 = self.relu(self.convInt2Third(i2))
         i2rec = self.resizeInt1(self.relu(i2))
-        i1 = self.relu(self.convInt1Third(i1) + i2rec)
+        i1 = self.relu(i1Res + self.convInt1Third(i1) + i2rec)
         i1rec = self.resizeLow(self.relu(i1))
         i2rec = self.resizeLow(i2rec)
-        x = self.relu(self.convLowThird(x) + i1rec + i2rec)
+        x = self.subpixel_low(xRes + self.convLowThird(x) + i1rec + i2rec)
 
 
         # Residual addition
-        x = x + xRes
-        i1 = i1 + i1Res
+        #x = x + xRes
+        #i1 = i1 + i1Res
 
 
         # Operations on fourth layers
-        i2 = self.relu(self.convInt2Fourth(i2))
-        i1 = self.relu(self.convInt1Fourth(i1))
+        i2 = self.subpixel_int2(self.convInt2Fourth(i2))
+        i1 = self.subpixel_int1(self.convInt1Fourth(i1))
 
 
         # Subpixel layer
-        i2 = self.subpixel_int2(i2)
-        i1 = self.subpixel_int1(i1)
-        x = self.subpixel_low(x)
+        #i2 = self.subpixel_int2(i2)
+        #i1 = self.subpixel_int1(i1)
+        #x = self.subpixel_low(x)
 
         return i2, i1, x
 
