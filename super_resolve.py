@@ -9,8 +9,6 @@ from PIL import Image
 import torch
 import torchvision.utils as tv
 from torch.utils.data import DataLoader
-
-
 from utils import save_output
 
 
@@ -25,24 +23,25 @@ parser.add_argument('--cuda', action='store_true', help='use cuda')
 opt = parser.parse_args()
 
 
-test_set = get_test_set(8, opt.full_size)
+test_set = get_test_set(opt.upscale_factor, opt.full_size)
 testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=True)
 device = torch.device("cuda" if opt.cuda else "cpu")
-model_dir = join("checkpoints", opt.model)
+model_dir = join("rcnn_checkpoints/", opt.model)
 model = torch.load(model_dir)
 model.to(device)
 
 
 def main():
     counter = 0
+    print("Saving Images")
     if not exists(opt.output_dir):
         makedirs(opt.output_dir)
     with torch.no_grad():
         for batch in testing_data_loader:
             inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
-            prediction = model(inimg, int1, int2)
+            _,_,prediction = model(inimg, int1, int2)
             lowres_fname=(test_set.lowres_filenames[counter])
-            fname=lowres_fname[29:40]
+            fname=lowres_fname[27:40]
             in_filename = opt.output_dir + str(fname)
             out_filename = opt.output_dir + 'out' + str(fname)
             tg_filename = opt.output_dir + 'tg' + str(fname)
