@@ -23,10 +23,10 @@ parser.add_argument('--cuda', action='store_true', help='use cuda')
 opt = parser.parse_args()
 
 
-test_set = get_test_set(8, opt.full_size)
+test_set = get_test_set(opt.upscale_factor, opt.full_size)
 testing_data_loader = DataLoader(dataset=test_set, num_workers=opt.threads, batch_size=1, shuffle=True)
 device = torch.device("cuda" if opt.cuda else "cpu")
-model_dir = join("rrcnn_checkpoints", opt.model)
+model_dir = join("rrcnn_checkpoints/", opt.model)
 model = torch.load(model_dir)
 model.to(device)
 
