@@ -12,7 +12,6 @@ import torch.optim as optim
 from torchvision.transforms import Compose, ToPILImage, ToTensor, Resize
 import torchvision.utils as tv
 from torch.utils.data import DataLoader
-from utils import save_image
 
 
 # Training settings
@@ -135,24 +134,24 @@ def main():
         epoch = opt.nEpochs
         int2Pred, int1Pred, lowPred, inputs, targets = test(epoch)
         x=(len(testing_data_loader.dataset))
-        if not os.path.exists('dataset/kidney/test/rcnn_low{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rcnn_low{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rcnn_int1{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rcnn_int1{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rcnn_int2{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rcnn_int2{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rcnn_input{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rcnn_input{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rcnn_target{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rcnn_target{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_low_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_low_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_int1_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_int1_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_int2_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_int2_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_input_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_input_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/rcnn_target_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/rcnn_target_{}/'.format(epoch))
         for i in range(x):
             lowres_fname = (test_set.lowres_filenames[i])
             fname = lowres_fname[27:39]
-            filename = 'dataset/kidney/test/rcnn_low{}/'.format(epoch) + str(fname)
-            i1filename = 'dataset/kidney/test/rcnn_int1{}/'.format(epoch) + str(fname)
-            i2filename = 'dataset/kidney/test/rcnn_int2{}/'.format(epoch) + str(fname)
-            in_filename = 'dataset/kidney/test/rcnn_input{}/'.format(epoch) + str(fname)
-            tg_filename = 'dataset/kidney/test/rcnn_target{}/'.format(epoch) + str(fname)
+            filename = 'dataset/kidney/test/rcnn_low_{}/'.format(epoch) + str(fname)
+            i1filename = 'dataset/kidney/test/rcnn_int1_{}/'.format(epoch) + str(fname)
+            i2filename = 'dataset/kidney/test/rcnn_int2_{}/'.format(epoch) + str(fname)
+            in_filename = 'dataset/kidney/test/rcnn_input_{}/'.format(epoch) + str(fname)
+            tg_filename = 'dataset/kidney/test/rcnn_target_{}/'.format(epoch) + str(fname)
             print(filename)
             tv.save_image(inputs[i], in_filename)
             tv.save_image(targets[i], tg_filename)
