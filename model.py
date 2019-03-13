@@ -96,17 +96,17 @@ class RNet(nn.Module):
     def _initialize_weights(self):
         init.orthogonal_(self.convLowFirst.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convLowSecond.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convLowThird.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convLowThird.weight)
 
         init.orthogonal_(self.convInt1First.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convInt1Second.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convInt1Third.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convInt1Fourth.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt1Fourth.weight)
 
         init.orthogonal_(self.convInt2First.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convInt2Second.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convInt2Third.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convInt2Fourth.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt2Fourth.weight)
 
         init.orthogonal_(self.resConv1.weight, init.calculate_gain('relu'))
         init.orthogonal_(self.resConv2.weight, init.calculate_gain('relu'))
