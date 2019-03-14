@@ -8,9 +8,9 @@ class RNet(nn.Module):
         super(RNet, self).__init__()
 
         # Siamese layers
-        self.convFirst = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1)
-        self.convSecond = nn.Conv2d(in_channels=64, out_channels=32, kernel_size=1, stride=1, padding=0)
-        self.convThird = nn.Conv2d(in_channels=32, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
+        self.convFirst = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.convSecond = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.convThird = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         self.convInt1Fourth = nn.Conv2d(in_channels=upscale_factor ** 2, out_channels=(int(upscale_factor / 2) ** 2), kernel_size=1, stride=1, padding=0)
         self.convInt2Fourth = nn.Conv2d(in_channels=upscale_factor ** 2, out_channels=(int(upscale_factor / 4) ** 2), kernel_size=1, stride=1, padding=0)
         # Residual layers
