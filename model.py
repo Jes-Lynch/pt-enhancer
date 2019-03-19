@@ -65,7 +65,7 @@ class RNet(nn.Module):
 
         i2SI = self.relu(self.convInt2FirstSI(i1SI))
         i2SI = self.relu(self.convInt2SecondSI(i2SI))
-        i2SI = self.subpixel_SI(self.convInt2ThirdSI(i2SI))
+#        i2SI = self.subpixel_SI(self.convInt2ThirdSI(i2SI)) #Is this needed?
         i1 = xSI
         i2 = i1SI
 
