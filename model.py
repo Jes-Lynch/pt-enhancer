@@ -7,18 +7,33 @@ class RNet(nn.Module):
     def __init__(self, upscale_factor, full_size):
         super(RNet, self).__init__()
 
+        # Layers to build int1 and int2
+        self.convLowFirstSI = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.convLowSecondSI = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.convLowThirdSI = nn.Conv2d(in_channels=16, out_channels=4, kernel_size=1, stride=1, padding=0)
+        # Layers for intermediate 1
+        self.convInt1FirstSI = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.convInt1SecondSI = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.convInt1ThirdSI = nn.Conv2d(in_channels=16, out_channels=4, kernel_size=1, stride=1, padding=0)
+        # Layers for intermediate 2
+        self.convInt2FirstSI = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.convInt2SecondSI = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.convInt2ThirdSI = nn.Conv2d(in_channels=16, out_channels=4, kernel_size=1, stride=1, padding=0)
+        self.subpixel_SI = nn.PixelShuffle(2)
+
+
         # Layers for input
         self.convLowFirst = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.convLowSecond = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.convLowSecond = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
         self.convLowThird = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         # Layers for intermediate 1
         self.convInt1First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.convInt1Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.convInt1Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
         self.convInt1Third = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         self.convInt1Fourth = nn.Conv2d(in_channels=upscale_factor**2, out_channels=(int(upscale_factor/2)**2), kernel_size=1, stride=1, padding=0)
         # Layers for intermediate 2
         self.convInt2First = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.convInt2Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.convInt2Second = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
         self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         self.convInt2Fourth = nn.Conv2d(in_channels=upscale_factor**2, out_channels=(int(upscale_factor/4)**2), kernel_size=1, stride=1, padding=0)
         # Residual layers
@@ -38,7 +53,23 @@ class RNet(nn.Module):
         self.resizeInt2 = Interpolate(size=(int(full_size / (upscale_factor / 4)), int(full_size / (upscale_factor / 4))), mode='bilinear')
 
 
-    def forward(self, x, i1, i2):
+    def forward(self, x):
+        # Crreate Ini1 and Int2
+        xSI = self.relu(self.convLowFirstSI(x))
+        xSI = self.relu(self.convLowSecondSI(xSI))
+        xSI = self.subpixel_SI(self.convLowThirdSI(xSI))
+
+        i1SI = self.relu(self.convInt1FirstSI(xSI))
+        i1SI = self.relu(self.convInt1SecondSI(i1SI))
+        i1SI = self.subpixel_SI(self.convInt1ThirdSI(i1SI))
+
+        i2SI = self.relu(self.convInt2FirstSI(i1SI))
+        i2SI = self.relu(self.convInt2SecondSI(i2SI))
+        i2SI = self.subpixel_SI(self.convInt2ThirdSI(i2SI))
+        i1 = xSI
+        i2 = i1SI
+
+
         # Operations on residual layers
         i1Down =  self.resizeLow(i1)
         xRes = i1Down - x
@@ -94,6 +125,18 @@ class RNet(nn.Module):
 
 
     def _initialize_weights(self):
+        # Creation Weights
+        init.orthogonal_(self.convLowFirstSI.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convLowSecondSI.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convLowThirdSI.weight)
+        init.orthogonal_(self.convInt1FirstSI.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt1SecondSI.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt1ThirdSI.weight)
+        init.orthogonal_(self.convInt2FirstSI.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt2SecondSI.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convInt2ThirdSI.weight)
+
+
         init.orthogonal_(self.convLowFirst.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convLowSecond.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convLowThird.weight)

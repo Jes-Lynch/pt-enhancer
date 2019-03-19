@@ -56,14 +56,14 @@ def train(epoch):
     int1_loss = 0
     int2_loss = 0
     for iteration, batch in enumerate(training_data_loader, 1):
-        inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
+        inimg, target = batch[0].to(device), batch[1].to(device)
         epochloss = 0
 
         #Run through the model, optrimizes from int2 to int2 and finally the lowest resolution input
         optimizerLow.zero_grad()
         optimizerInt1.zero_grad()
         optimizerInt2.zero_grad()
-        int2Result, int1Result, lowResult = model(inimg, int1, int2)
+        int2Result, int1Result, lowResult = model(inimg)
         loss = criterion(int2Result, target)
         int2_loss += loss.item()
         epochloss += loss.item()
@@ -89,7 +89,7 @@ def train(epoch):
 
 def test(epoch):
     avg_psnr = 0
-    model = torch.load("rrcnn_checkpoints/model_epoch_{}.pth".format(epoch))
+    model = torch.load("singleinput_checkpoints/model_epoch_{}.pth".format(epoch))
     model.to(device)
     int2Pred = []
     int1Pred = []
@@ -100,9 +100,9 @@ def test(epoch):
         counter = 1
         for batch in testing_data_loader:
             counter +=1
-            inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
+            inimg, target = batch[0].to(device), batch[1].to(device)
 
-            int2Result, int1Result, lowResult = model(inimg, int1, int2)
+            int2Result, int1Result, lowResult = model(inimg)
             int2Pred.append(int2Result)
             int1Pred.append(int1Result)
             lowPred.append(lowResult)
@@ -116,9 +116,9 @@ def test(epoch):
 
 
 def checkpoint(epoch):
-    if not os.path.exists('rrcnn_checkpoints'):
-        os.makedirs('rrcnn_checkpoints')
-    model_out_path = "rrcnn_checkpoints/model_epoch_{}.pth".format(epoch)
+    if not os.path.exists('singleinput_checkpoints'):
+        os.makedirs('singleinput_checkpoints')
+    model_out_path = "singleinput_checkpoints/model_epoch_{}.pth".format(epoch)
     torch.save(model, model_out_path)
     print("Checkpoint saved to {}".format(model_out_path))
 
