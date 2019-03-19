@@ -105,7 +105,7 @@ def test(epoch):
         counter = 1
         for batch in testing_data_loader:
             counter +=1
-            inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
+            inimg, target = batch[0].to(device), batch[3].to(device)
 
             inimg_up = resize_up(inimg)
             inimg_up2 = resize_up2(inimg)
@@ -142,24 +142,24 @@ def main():
         epoch = opt.nEpochs
         int2Pred, int1Pred, lowPred, inputs, targets = test(epoch)
         x=(len(testing_data_loader.dataset))
-        if not os.path.exists('dataset/kidney/test/rrcnn_low_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_low_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_int1_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_int1_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_int2_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_int2_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_input_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_input_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_target_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_target_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/singleinput_low_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/singleinput_low_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/singleinput_int1_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/singleinput_int1_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/singleinput_int2_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/singleinput_int2_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/singleinput_input_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/singleinput_input_{}/'.format(epoch))
+        if not os.path.exists('dataset/kidney/test/singleinput_target_{}/'.format(epoch)):
+            os.makedirs('dataset/kidney/test/singleinput_target_{}/'.format(epoch))
         for i in range(x):
             lowres_fname = (test_set.lowres_filenames[i])
             fname = lowres_fname[27:39]
-            filename = 'dataset/kidney/test/rrcnn_low_{}/'.format(epoch) + str(fname)
-            i1filename = 'dataset/kidney/test/rrcnn_int1_{}/'.format(epoch) + str(fname)
-            i2filename = 'dataset/kidney/test/rrcnn_int2_{}/'.format(epoch) + str(fname)
-            in_filename = 'dataset/kidney/test/rrcnn_input_{}/'.format(epoch) + str(fname)
-            tg_filename = 'dataset/kidney/test/rrcnn_target_{}/'.format(epoch) + str(fname)
+            filename = 'dataset/kidney/test/singleinput_low_{}/'.format(epoch) + str(fname)
+            i1filename = 'dataset/kidney/test/singleinput_int1_{}/'.format(epoch) + str(fname)
+            i2filename = 'dataset/kidney/test/singleinput_int2_{}/'.format(epoch) + str(fname)
+            in_filename = 'dataset/kidney/test/singleinput_input_{}/'.format(epoch) + str(fname)
+            tg_filename = 'dataset/kidney/test/singleinput_target_{}/'.format(epoch) + str(fname)
             print(filename)
             tv.save_image(inputs[i], in_filename)
             tv.save_image(targets[i], tg_filename)
