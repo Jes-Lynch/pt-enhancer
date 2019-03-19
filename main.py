@@ -56,14 +56,14 @@ def train(epoch):
     int1_loss = 0
     int2_loss = 0
     for iteration, batch in enumerate(training_data_loader, 1):
-        inimg, target = batch[0].to(device), batch[1].to(device)
+        inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
         epochloss = 0
 
         #Run through the model, optrimizes from int2 to int2 and finally the lowest resolution input
         optimizerLow.zero_grad()
         optimizerInt1.zero_grad()
         optimizerInt2.zero_grad()
-        int2Result, int1Result, lowResult = model(inimg)
+        int2Result, int1Result, lowResult = model(inimg, int1, int2)
         loss = criterion(int2Result, target)
         int2_loss += loss.item()
         epochloss += loss.item()
@@ -100,9 +100,9 @@ def test(epoch):
         counter = 1
         for batch in testing_data_loader:
             counter +=1
-            inimg, target = batch[0].to(device), batch[1].to(device)
+            inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
 
-            int2Result, int1Result, lowResult = model(inimg)
+            int2Result, int1Result, lowResult = model(inimg, int1, int2)
             int2Pred.append(int2Result)
             int1Pred.append(int1Result)
             lowPred.append(lowResult)
