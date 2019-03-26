@@ -66,7 +66,7 @@ def train(epoch):
         optimizerLow.zero_grad()
         optimizerInt1.zero_grad()
         optimizerInt2.zero_grad()
-        int2Result, int1Result, lowResult = model(inimg, int1, int2)
+        int2Result, int1Result, lowResult = model(inimg, int1, int2, target)
         loss = criterion(int2Result, target)
         int2_loss += loss.item()
         epochloss += loss.item()
@@ -92,7 +92,7 @@ def train(epoch):
 
 def test(epoch):
     avg_psnr = 0
-    model = torch.load("singleinput_checkpoints/model_epoch_{}.pth".format(epoch))
+    model = torch.load("rrcnn_checkpoints/model_epoch_{}.pth".format(epoch))
     model.to(device)
     int2Pred = []
     int1Pred = []
@@ -101,6 +101,7 @@ def test(epoch):
     targets = []
     resize_up = Interpolate(size=(int(full_size / (upscale_factor / 2)), int(full_size / (upscale_factor / 2))), mode='bilinear')
     resize_up2 = Interpolate(size=(int(full_size / (upscale_factor / 4)), int(full_size / (upscale_factor / 4))), mode='bilinear')
+    resize_uptarget = Interpolate(size=(full_size, full_size), mode='bilinear')
     with torch.no_grad():
         counter = 1
         for batch in testing_data_loader:
@@ -109,10 +110,14 @@ def test(epoch):
 
             inimg_up = resize_up(inimg)
             inimg_up2 = resize_up2(inimg)
-            _,tempInt1,_ = model(inimg, inimg_up, inimg_up2)
+            inimg_uptarget = resize_uptarget(inimg)
+            _,tempInt1,_ = model(inimg, inimg_up, inimg_up2, inimg_uptarget)
             inimg_up2 = resize_up2(tempInt1)
-            tempInt2, tempInt1,_ = model(inimg, tempInt1, inimg_up2)
-            int2Result, int1Result, lowResult = model(inimg, tempInt1, tempInt2)
+            tempInt1 = resize_up(tempInt1)
+            tempInt2, tempInt1,_ = model(inimg, tempInt1, inimg_up2, inimg_uptarget)
+            tempInt1 = resize_up(tempInt1)
+            tempInt2 = resize_up2(tempInt2)
+            int2Result, int1Result, lowResult = model(inimg, tempInt1, tempInt2, inimg_uptarget)
             int2Pred.append(int2Result)
             int1Pred.append(int1Result)
             lowPred.append(lowResult)
