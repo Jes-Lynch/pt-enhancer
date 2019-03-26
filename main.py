@@ -3,6 +3,7 @@ import argparse
 from data import get_training_set, get_test_set, input_transform
 from math import log10
 from model import RNet
+from model import Interpolate
 import os
 from PIL import Image
 
@@ -35,6 +36,7 @@ if opt.cuda and not torch.cuda.is_available():
 torch.manual_seed(opt.seed)
 
 device = torch.device("cuda" if opt.cuda else "cpu")
+full_size = opt.full_size
 
 print('===> Loading datasets')
 train_set = get_training_set(opt.upscale_factor, opt.full_size)
@@ -68,7 +70,7 @@ def train(epoch):
         optimizerLow.zero_grad()
         optimizerInt1.zero_grad()
         optimizerInt2.zero_grad()
-        int2Result, int1Result, lowResult = model(inimg, int1, int2)
+        int2Result, int1Result, lowResult = model(inimg, int1, int2, target)
         loss = criterion(int2Result, target)
         int2_loss += loss.item()
         epochloss += loss.item()
@@ -100,6 +102,7 @@ def test(epoch):
     lowPred = []
     inputs = []
     targets = []
+    resize_up = Interpolate(size=(full_size, full_size), mode='bilinear')
     with torch.no_grad():
         counter = 1
         for batch in testing_data_loader:
@@ -107,7 +110,8 @@ def test(epoch):
             inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(
                 device)
 
-            int2Result, int1Result, lowResult = model(inimg, int1, int2)
+            int2Up = resize_up(int2)
+            int2Result, int1Result, lowResult = model(inimg, int1, int2, int2Up)
             int2Pred.append(int2Result)
             int1Pred.append(int1Result)
             lowPred.append(lowResult)
