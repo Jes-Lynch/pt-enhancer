@@ -49,8 +49,7 @@ model = RNet(upscale_factor=opt.upscale_factor, full_size=opt.full_size)
 if torch.cuda.device_count() > 1:
     print("Using ", torch.cuda.device_count(), " GPUs")
     model = nn.DataParallel(model)
-elif torch.cuda.device_count() == 1:
-    print("Using 1 GPU")
+
 
 model.to(device)
 criterion = nn.MSELoss()
