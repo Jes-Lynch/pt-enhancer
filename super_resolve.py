@@ -39,7 +39,7 @@ def main():
     with torch.no_grad():
         for batch in testing_data_loader:
             inimg, int1, int2, target = batch[0].to(device), batch[1].to(device), batch[2].to(device), batch[3].to(device)
-            _,_,prediction = model(inimg, int1, int2)
+            _,_,prediction = model(inimg, int1, int2, target)
             lowres_fname=(test_set.lowres_filenames[counter])
             fname=lowres_fname[27:40]
             in_filename = opt.output_dir + str(fname)
