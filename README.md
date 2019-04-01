@@ -1,4 +1,4 @@
-# Superresolution using an efficient sub-pixel convolutional neural network
+# Superresolution using a Residual Recurrent Convolutional Neural Network
 
 This trains a super-resolution network on images of WSI tissue samples using crops of high resolution and low resolution WSI camera samples. A snapshot of the model after every epoch is saved with filename model_epoch_<epoch_number>.pth
 
