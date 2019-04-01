@@ -4,7 +4,7 @@ This trains a super-resolution network on images of WSI tissue samples using cro
 
 
 ```
-usage: main.py [-h] --upscale_factor UPSCALE_FACTOR [--batchSize BATCHSIZE]
+usage: main.py [-h] [--upscale_factor UPSCALE_FACTOR] [--full_size FULL_SZIE] [--batchSize BATCHSIZE]
                [--testBatchSize TESTBATCHSIZE] [--nEpochs NEPOCHS] [--lr LR]
                [--cuda] [--threads THREADS] [--seed SEED] [--train]
 
@@ -13,6 +13,7 @@ PyTorch Super Res Example
 optional arguments:
   -h, --help            show this help message and exit
   --upscale_factor      super resolution upscale factor
+  --full_size           size of high resolution images
   --batchSize           training batch size
   --testBatchSize       testing batch size
   --nEpochs             number of epochs to train for
@@ -26,18 +27,18 @@ optional arguments:
 ## Example Usage:
 
 ### Data Structure
-`%root%\dataset\%subset%\images\(highres or lowres)`
-`Example: pt_enhancer\dataset\kidney\images\highres\`
+`%root%\dataset\%subset%\(train or test)\(lowres, int1, int2, highres)`
+`Example: pt_enhancer\dataset\kidney\train\highres\`
 
 ### Train
-`--upscale_factor 8 --batchSize 10 --nEpochs 1000 --lr 0.0001 --threads 5 --cuda --train`
+`python main.py --upscale_factor 8 --full_size 1024 --batchSize 5 --nEpochs 1000 --lr 0.001 --threads 6 --cuda --train`
 
 ### Test
-`--upscale_factor 8 --testBatchSize 1 --nEpochs 1000 --threads 5 --cuda`
+`python main.py --upscale_factor 8 --full_size 1024 --testBatchSize 1 --nEpochs 1000 --threads 4 --cuda`
 
 ### Super Resolve
-`python super_resolve.py --upscale_factor 8 --model model_epoch_100.pth --output_dir results/ --threads 1 --cuda`
+`python super_resolve.py --upscale_factor 8 --full_size 1024 --model model_epoch_1000.pth --output_dir rrcnn_results/ --threads 6 --cuda`
 
 ## Sample
 Kidney Tissue<br>
-![orig](https://github.com/Jes-Lynch/pt_enhancer/blob/rcnn/example/example.png)<br>
+![orig](https://github.com/Jes-Lynch/pt_enhancer/blob/master/example/example.png)<br>
