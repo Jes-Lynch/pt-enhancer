@@ -9,7 +9,7 @@ class RNet(nn.Module):
 
         # Siamese layers
         self.convFirst = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, stride=1, padding=1)
-        self.convSecond = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=1, stride=1, padding=0)
+        self.convSecond = nn.Conv2d(in_channels=32, out_channels=16, kernel_size=3, stride=1, padding=1)
         self.convThird = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         self.convInt1Fourth = nn.Conv2d(in_channels=upscale_factor ** 2, out_channels=(int(upscale_factor / 2) ** 2), kernel_size=1, stride=1, padding=0)
         self.convInt2Fourth = nn.Conv2d(in_channels=upscale_factor ** 2, out_channels=(int(upscale_factor / 4) ** 2), kernel_size=1, stride=1, padding=0)
@@ -69,9 +69,9 @@ class RNet(nn.Module):
     def _initialize_weights(self):
         init.orthogonal_(self.convFirst.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convSecond.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convThird.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convInt1Fourth.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convInt2Fourth.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convThird.weight)
+        init.orthogonal_(self.convInt1Fourth.weight)
+        init.orthogonal_(self.convInt2Fourth.weight)
 
 
 # Class for upscaling or downscaling images while being fed through the network

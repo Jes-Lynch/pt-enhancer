@@ -68,7 +68,7 @@ def train(epoch):
         optimizerLow.zero_grad()
         optimizerInt1.zero_grad()
         optimizerInt2.zero_grad()
-        int2Result, int1Result, lowResult = model(inimg, int1, int2, target)
+        int2Result, int1Result, lowResult = model(inimg, int1, int2)
         loss = criterion(int2Result, target)
         int2_loss += loss.item()
         epochloss += loss.item()
