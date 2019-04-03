@@ -22,9 +22,15 @@ class RNet(nn.Module):
         self.convInt2Third = nn.Conv2d(in_channels=16, out_channels=upscale_factor**2, kernel_size=1, stride=1, padding=0)
         self.convInt2Fourth = nn.Conv2d(in_channels=upscale_factor**2, out_channels=(int(upscale_factor/4)**2), kernel_size=1, stride=1, padding=0)
         # Residual layers
-        self.resConv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True)
-        self.resConv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bias=False)
-        self.resBN = nn.BatchNorm2d(64, eps=0.0001, momentum = 0.95)
+        self.resLowConv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True)
+        self.resLowConv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.resLowBN = nn.BatchNorm2d(64, eps=0.0001, momentum = 0.95)
+        self.resInt1Conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True)
+        self.resInt1Conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.resInt1BN = nn.BatchNorm2d(64, eps=0.0001, momentum = 0.95)
+        self.resInt2Conv1 = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1, bias=True)
+        self.resInt2Conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1, bias=False)
+        self.resInt2BN = nn.BatchNorm2d(64, eps=0.0001, momentum = 0.95)
         # Other needed declarations
         self._initialize_weights()
         self.subpixel_int2 = nn.PixelShuffle(int(upscale_factor / 4))
@@ -42,16 +48,16 @@ class RNet(nn.Module):
         # Operations on residual layers
         i1Down =  self.resizeLow(i1)
         xRes = i1Down - x
-        xRes = self.resrelu(self.resConv1(xRes))
-        xRes = self.resrelu(self.resBN(self.resConv2(xRes)))
+        xRes = self.resrelu(self.resLowConv1(xRes))
+        xRes = self.resrelu(self.resLowBN(self.resLowConv2(xRes)))
         i2Down = self.resizeInt1(i2)
         i1Res = i2Down - i1
-        i1Res = self.resrelu(self.resConv1(i1Res))
-        i1Res = self.resrelu(self.resBN(self.resConv2(i1Res)))
+        i1Res = self.resrelu(self.resInt1Conv1(i1Res))
+        i1Res = self.resrelu(self.resInt1BN(self.resInt1Conv2(i1Res)))
         targetDown = self.resizeInt2(target)
         i2Res = targetDown - i2
-        i2Res = self.resrelu(self.resConv1(i2Res))
-        i2Res = self.resrelu(self.resBN(self.resConv2(i2Res)))
+        i2Res = self.resrelu(self.resInt2Conv1(i2Res))
+        i2Res = self.resrelu(self.resInt2BN(self.resInt2Conv2(i2Res)))
 
 
         # Operations on first layers
@@ -112,8 +118,13 @@ class RNet(nn.Module):
         init.orthogonal_(self.convInt2Third.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convInt2Fourth.weight)
 
-        init.orthogonal_(self.resConv1.weight, init.calculate_gain('relu'))
-        init.orthogonal_(self.resConv2.weight, init.calculate_gain('relu'))
+
+        init.orthogonal_(self.resLowConv1.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.resLowConv2.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.resInt1Conv1.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.resInt1Conv2.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.resInt2Conv1.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.resInt2Conv2.weight, init.calculate_gain('relu'))
 
 
 class Interpolate(nn.Module):
