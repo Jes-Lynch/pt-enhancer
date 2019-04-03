@@ -88,9 +88,11 @@ class RNet(nn.Module):
     def _initialize_weights(self):
         init.orthogonal_(self.convFirst.weight, init.calculate_gain('leaky_relu'))
         init.orthogonal_(self.convSecond.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convThird.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convInt1Fourth.weight, init.calculate_gain('leaky_relu'))
-        init.orthogonal_(self.convInt2Fourth.weight, init.calculate_gain('leaky_relu'))
+        init.orthogonal_(self.convThird.weight)
+        init.orthogonal_(self.convInt1Fourth.weight)
+        init.orthogonal_(self.convInt2Fourth.weight)
+        init.orthogonal_(self.resConv1.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.resConv2.weight, init.calculate_gain('relu'))
 
 
 # Class for upscaling or downscaling images while being fed through the network
