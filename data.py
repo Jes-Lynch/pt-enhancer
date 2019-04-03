@@ -44,7 +44,7 @@ def target_transform(crop_size, full_size):
 ])
 
 def get_training_set(upscale_factor, full_size):
-    root_dir = join("dataset", "kidney/train")
+    root_dir = join("dataset", "breast/train")
     highres_dir = join(root_dir, "highres")
     int2_dir = join(root_dir, "int2")
     int1_dir = join(root_dir, "int1")
@@ -59,7 +59,7 @@ def get_training_set(upscale_factor, full_size):
 
 
 def get_test_set(upscale_factor, full_size):
-    root_dir = join("dataset", "kidney/test")
+    root_dir = join("dataset", "breast/test")
     highres_dir = join(root_dir, "highres")
     int2_dir = join(root_dir, "int2")
     int1_dir = join(root_dir, "int1")

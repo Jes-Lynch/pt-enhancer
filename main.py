@@ -91,7 +91,7 @@ def train(epoch):
 
 def test(epoch):
     avg_psnr = 0
-    model = torch.load("rrcnn_checkpoints/model_epoch_{}.pth".format(epoch))
+    model = torch.load("rrcnn_checkpoints_breast/model_epoch_{}.pth".format(epoch))
     model.to(device)
     int2Pred = []
     int1Pred = []
@@ -120,9 +120,9 @@ def test(epoch):
 
 
 def checkpoint(epoch):
-    if not os.path.exists('rrcnn_checkpoints'):
-        os.makedirs('rrcnn_checkpoints')
-    model_out_path = "rrcnn_checkpoints/model_epoch_{}.pth".format(epoch)
+    if not os.path.exists('rrcnn_checkpoints_breast'):
+        os.makedirs('rrcnn_checkpoints_breast')
+    model_out_path = "rrcnn_checkpoints_breast/model_epoch_{}.pth".format(epoch)
     torch.save(model, model_out_path)
     print("Checkpoint saved to {}".format(model_out_path))
 
@@ -136,24 +136,24 @@ def main():
         epoch = opt.nEpochs
         int2Pred, int1Pred, lowPred, inputs, targets = test(epoch)
         x=(len(testing_data_loader.dataset))
-        if not os.path.exists('dataset/kidney/test/rrcnn_low_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_low_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_int1_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_int1_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_int2_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_int2_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_input_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_input_{}/'.format(epoch))
-        if not os.path.exists('dataset/kidney/test/rrcnn_target_{}/'.format(epoch)):
-            os.makedirs('dataset/kidney/test/rrcnn_target_{}/'.format(epoch))
+        if not os.path.exists('dataset/breast/test/rrcnn_low_{}/'.format(epoch)):
+            os.makedirs('dataset/breast/test/rrcnn_low_{}/'.format(epoch))
+        if not os.path.exists('dataset/breast/test/rrcnn_int1_{}/'.format(epoch)):
+            os.makedirs('dataset/breast/test/rrcnn_int1_{}/'.format(epoch))
+        if not os.path.exists('dataset/breast/test/rrcnn_int2_{}/'.format(epoch)):
+            os.makedirs('dataset/breast/test/rrcnn_int2_{}/'.format(epoch))
+        if not os.path.exists('dataset/breast/test/rrcnn_input_{}/'.format(epoch)):
+            os.makedirs('dataset/breast/test/rrcnn_input_{}/'.format(epoch))
+        if not os.path.exists('dataset/breast/test/rrcnn_target_{}/'.format(epoch)):
+            os.makedirs('dataset/breast/test/rrcnn_target_{}/'.format(epoch))
         for i in range(x):
             lowres_fname = (test_set.lowres_filenames[i])
             fname = lowres_fname[27:39]
-            filename = 'dataset/kidney/test/rrcnn_low_{}/'.format(epoch) + str(fname)
-            i1filename = 'dataset/kidney/test/rrcnn_int1_{}/'.format(epoch) + str(fname)
-            i2filename = 'dataset/kidney/test/rrcnn_int2_{}/'.format(epoch) + str(fname)
-            in_filename = 'dataset/kidney/test/rrcnn_input_{}/'.format(epoch) + str(fname)
-            tg_filename = 'dataset/kidney/test/rrcnn_target_{}/'.format(epoch) + str(fname)
+            filename = 'dataset/breast/test/rrcnn_low_{}/'.format(epoch) + str(fname)
+            i1filename = 'dataset/breast/test/rrcnn_int1_{}/'.format(epoch) + str(fname)
+            i2filename = 'dataset/breast/test/rrcnn_int2_{}/'.format(epoch) + str(fname)
+            in_filename = 'dataset/breast/test/rrcnn_input_{}/'.format(epoch) + str(fname)
+            tg_filename = 'dataset/breast/test/rrcnn_target_{}/'.format(epoch) + str(fname)
             print(filename)
             tv.save_image(inputs[i], in_filename)
             tv.save_image(targets[i], tg_filename)
