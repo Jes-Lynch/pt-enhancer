@@ -7,7 +7,7 @@ def calculate_valid_crop_size(crop_size, upscale_factor):
     return crop_size - (crop_size % upscale_factor)
 
 
-#For all of these transformations, we are currently assuming an upscale factor of 8 (256 -> 2048)
+#For all of these transformations, we are currently assuming an upscale factor of 8 (128 -> 1024)
 #Input final size: 128
 def input_transform(crop_size, full_size, upscale_factor):
     return Compose([
@@ -44,7 +44,7 @@ def target_transform(crop_size, full_size):
 ])
 
 def get_training_set(upscale_factor, full_size):
-    root_dir = join("dataset", "breast/train")
+    root_dir = join("dataset", "kidney/train")
     highres_dir = join(root_dir, "highres")
     int2_dir = join(root_dir, "int2")
     int1_dir = join(root_dir, "int1")
@@ -59,7 +59,7 @@ def get_training_set(upscale_factor, full_size):
 
 
 def get_test_set(upscale_factor, full_size):
-    root_dir = join("dataset", "breast/test")
+    root_dir = join("dataset", "kidney/test")
     highres_dir = join(root_dir, "highres")
     int2_dir = join(root_dir, "int2")
     int1_dir = join(root_dir, "int1")
